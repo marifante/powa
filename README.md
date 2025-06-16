@@ -4,25 +4,10 @@ This application is designed to monitor and control power domains using the Powe
 
 ## How it works
 
-Originally, this application was designed to be used as a server that listens for commands and acts on them.
-The server will monitor periodically the power domains, checking if current consumption is within the limits set by the user.
-If the current consumption exceeds the limits, the server will turn off the power domain and set up a flag to indicate that the power domain was turned off due to overconsumption.
+This tool works as a daemon, managing the configured power domains and monitoring their current consumption. It can turn on or off the power domains based on the current consumption limits set by the user.
+The data is stored in a time-series database, allowing for historical data analysis and visualization. Then the user can visualize with any tool, for example Grafana.
 
-A client can send a request to the server to turn on the power domain through a REST API. Or if you like, you can connect using a web browser to the web interface that the application provides and control the power domains from there.
-
-So, we can divide the application in the following components: the server and the web interface.
-
-### Server
-
-### Web interface
-
-## Usage
-
-This application is distributed as a python pip package and as a docker image.
-
-If you want to install it as a python pip package just run: To install it just run: `pip install git+https://github.com/marifante/powa.git`.
-
-On the other hand, you could also download the docker image that brings the application pre-installed in an ubuntu image. To do so, you can run: `docker pull ghcr.io/marifante/powa:latest` or use the tag that you like.
+For more information about how is designed the application, you can check the document at [doc/](doc/).
 
 ## Testing
 
@@ -33,5 +18,17 @@ We have 2 types of tests for this application: unit tests and integration tests.
 The unit-tests of this application are made with pytest. To run them you can run `make unit-tests` or `pytest` from the root directory of the project.
 
 ### Integration Testing
+
+TODO:
+
+## Related repositories
+
+There is a Yocto layer that includes all the necessary software to use the HAT and this application, which can be found at [Power Warden Yocto Layer](https://github.com/marifante/meta-power-warden).
+
+Also, you can find the Power Warden HAT PCB design at [Power Warden HAT PCB](https://github.com/marifante/rpi_power_warden_hat).
+
+   <div align="center">
+     <img src="doc/powa_char.png" alt="Power Warden Character" width="300">
+   </div>
 
 ![Power Warden Character](doc/powa_char.png)
