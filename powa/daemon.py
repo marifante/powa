@@ -6,8 +6,9 @@ import yaml
 import os
 import signal
 
-from powa.pd_control import PDController as pd_controller
-from powa.db_client import DBClient as db_client
+from powa.pd_control import PDController
+from powa.data_exporter import DataExporter
+from powa.types import PowerDomain
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,9 @@ class PowaDaemon:
     def __init__(self, config: str):
         """ Initialize powa daemon object.
 
+        The daemon will create 1 task for each power domain
+        and another one for the data exporter (http server).
+
         :param config: path to the yml configuration file.
         """
         self._config_file = config
@@ -38,8 +42,16 @@ class PowaDaemon:
         self._lock_file = DAEMON_LOCK_FILE
 
         self._config = parse_yaml_file(self._config_file)
-        self._tasks = ( pd_controller(self._config).create_task(),
-                            db_client(self._config).create_task() )
+
+        self._queues = {domain.value: asyncio.Queue() for domain in PowerDomain}
+        self._pds_tasks = tuple(
+            PDController(name=domain.value,
+                         config=self._config,
+                         queue=self._queues[domain.value]).task
+            for domain in PowerDomain
+        )
+
+        self._tasks = self._pds_tasks + (DataExporter(self._config, self._queues).task, )
 
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
@@ -109,4 +121,4 @@ def stop_daemon() -> None:
     with open(DAEMON_LOCK_FILE, 'r') as f:
         pid = int(f.read().strip())
 
-    logger.info(f"Sending a SIGTERM signal to the daemon (pid = {pid}) from process with pid = {self._pid}")
+    logger.info(f"Sending a SIGTERM signal to the daemon (pid = {pid}) from process with pid = {os.getpid()}")

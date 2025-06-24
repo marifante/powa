@@ -29,7 +29,7 @@ def main():
     logging.basicConfig(level=args.log_level,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    if args.command = "start":
+    if args.command == "start":
         start_daemon(config=args.config)
     elif args.command == "stop":
         stop_daemon()
