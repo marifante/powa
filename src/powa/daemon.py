@@ -6,7 +6,7 @@ import yaml
 import os
 import signal
 
-from powa.pd_control import PDController
+from powa.pd_control import DefaultConfig, PDController
 from powa.data_exporter import DataExporter
 from powa.types import PowerDomain
 
@@ -43,10 +43,12 @@ class PowaDaemon:
 
         self._config = parse_yaml_file(self._config_file)
 
+        # A pd controller task will be created for each power domain,
+        # even though one of them may not be configured, it should use a default configuration.
         self._queues = {domain.value: asyncio.Queue() for domain in PowerDomain}
         self._pds_tasks = tuple(
-            PDController(name=domain.value,
-                         config=self._config,
+            PDController(config=self._config if self._config.get('power_domain', {}).get(domain.value, None) else DefaultConfig.to_dict(),
+                         name=domain.value,
                          queue=self._queues[domain.value]).task
             for domain in PowerDomain
         )

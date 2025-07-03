@@ -1,0 +1,3 @@
+power_domain:
+  VBAT:
+    polling_interval: 10

@@ -15,7 +15,6 @@ class Ina260:
 
     def __init__(self, address : int = 0x40, channel : int = 1):
         self.i2c_channel = channel
-        self.bus = SMBus(self.i2c_channel)
         self.address = address
 
     def _read(self, reg: int) -> bytearray:
@@ -24,7 +23,8 @@ class Ina260:
         :param reg: register address
         :return: list of bytes as characters for struct unpack
         """
-        res = self.bus.read_i2c_block_data(self.address, reg, 2)
+        with SMBus(self.i2c_channel) as bus:
+            res = bus.read_i2c_block_data(self.address, reg, 2)
         return bytearray(res)
 
     @property
@@ -75,6 +75,3 @@ class Ina260:
         """
         die_id = struct.unpack('>H', self._read(_REGISTERS["DIE_ID"]))[0]
         return (die_id >> 4), (die_id & 0x000F)
-
-    def __del__(self):
-        self.bus.close()
