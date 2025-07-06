@@ -1,3 +1,4 @@
 __pycache__/
 .coverage
 src/powa.egg-info/*
+.tox/

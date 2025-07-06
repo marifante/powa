@@ -50,7 +50,7 @@ REBUILD_IMAGE=false
 ## Fixed variables
 SCRIPT_PATH=$(readlink -f "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-RUN_CMD="docker run --rm -it -v $(pwd):/home/embeddev/powa"
+RUN_CMD="docker run --rm -it -v $(pwd):/home/powa"
 
 parse_args "$@"
 
@@ -71,7 +71,6 @@ if [[ "$(docker images -q ${DOCKER_IMAGE_EXECUTED_LOCALLY} 2>/dev/null)" == "" ]
     echo "Creating docker image (user, UID=${uid} and GID=${gid})"
     docker build -f ${SCRIPT_DIR}/../docker/${DOCKERFILE} \
         --target dev \
-        --build-arg USER_UID=${uid} --build-arg USER_GID=${gid} \
         -t ${DOCKER_IMAGE_EXECUTED_LOCALLY} . &&
         ${DOCKER_RUN_FULL_CMD}
 else

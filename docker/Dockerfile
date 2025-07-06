@@ -1,22 +1,32 @@
-FROM python:3.11-slim AS prod
+FROM python:3.11-slim AS base
 
 RUN apt-get update && apt-get install -y git curl pipx && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m embeddev
-
-USER embeddev
-
 RUN pipx install poetry && pipx ensurepath
 
-WORKDIR /home/embeddev/powa
+RUN mkdir -p /home/powa && \
+    useradd -m embeddev && \
+    groupadd -r powa && \
+    usermod -aG powa root && \
+    usermod -aG powa embeddev && \
+    chown -R embeddev:powa /home/powa
+
+WORKDIR /home/powa
 
 COPY . .
 
-RUN /home/embeddev/.local/bin/poetry install --no-interaction
-
 ENTRYPOINT ["/bin/bash", "--login"]
 
-FROM prod AS dev
+FROM base AS dev
 
-RUN /home/embeddev/.local/bin/poetry install --only dev --no-interaction
+RUN pipx install poetry && pipx ensurepath && \
+    /root/.local/bin/poetry install --no-interaction && \
+    /root/.local/bin/poetry install --only dev --no-interaction
+
+FROM base AS prod
+
+USER embeddev
+
+RUN pipx install poetry && pipx ensurepath && \
+    /home/embeddev/.local/bin/poetry install --no-interaction

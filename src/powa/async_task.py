@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict
+from typing import Coroutine, Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,6 @@ class AsyncTask:
         :param config: a dictionary containing the configuration of this task.
         """
         self._config = config
-        self.task = self._safe_async_task()
 
     async def _async_task(self) -> None:
         """ Coroutine task. """
@@ -35,3 +34,8 @@ class AsyncTask:
             await self._handle_cancelled()
         except Exception as e:
             logger.error(f"An error occurred during task execution: {e}")
+
+    @property
+    def task(self) -> Coroutine:
+        """ Returns the coroutine task for this async task. """
+        return self._safe_async_task()

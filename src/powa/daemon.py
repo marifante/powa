@@ -43,7 +43,7 @@ class PowaDaemon:
             for domain in PowerDomain
         )
 
-        self._tasks = self._pds_tasks + (DataExporter(self._config, self._queues).task, )
+        self._tasks = self._pds_tasks + (DataExporter(self._config, queues=self._queues).task, )
 
         signal.signal(signal.SIGTERM, self._handle_sigterm)
 
