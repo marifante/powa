@@ -19,13 +19,11 @@ jobs:
 
       - name: "💭 Determine docker image tag"
         run: |
-          readonly is_tag=${{ startsWith(github.ref, 'refs/tags/') }}
-
-          if [ "$is_tag" = "true" ]; then
-            readonly tag=${{ github.ref#refs/tags/ }}
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
             echo "We are in a TAG event, using tag as image tag..."
           else
-            readonly tag=${GITHUB_SHA::7}
+            tag="${GITHUB_SHA::7}"
           fi
 
           echo "The image tag will be: ${tag}"
