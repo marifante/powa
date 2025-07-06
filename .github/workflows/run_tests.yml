@@ -1,0 +1,40 @@
+name: Run some unit-tests, linter and formatter
+
+on: ["push"]
+
+jobs:
+  determine-docker-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "💭 Determine docker image tag"
+        run: |
+          echo "Github ref: ${GITHUB_REF}"
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            tag="${GITHUB_REF#refs/tags/}"
+            echo "We are in a TAG event, using tag as image tag..."
+          else
+            tag="${GITHUB_SHA::7}"
+          fi
+
+          BASE_NAME="ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}"
+          DEV_NAME="${BASE_NAME}/dev:${tag}"
+
+          echo "Dev image name is: ${DEV_NAME}"
+
+          echo "DEV_NAME=${DEV_NAME}" >> $GITHUB_ENV
+
+  run-unit-tests:
+    needs: determine-docker-image
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.DEV_NAME }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: "🔨 Run unit tests"
+        run: |
+          echo "Running unit tests..."
+          poetry run tox
