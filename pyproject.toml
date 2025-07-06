@@ -1,10 +1,10 @@
 [project]
 name = "powa"
-dynamic = []
+dynamic = ["version"]
 description = "POwer WArden Daemon"
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4.0"
 authors = [ { name = "Julian Nicolas Rodriguez", email = "junirodriguezz1@gmail.com" } ]
 keywords = ["powa", "daemon", "power management", "energy", "monitoring"]
 dependencies = [
@@ -32,7 +32,7 @@ folders = [ { path = "src"} ]
 enable = true
 vcs = "git"
 
-[tool.group.dev.dependencies]
+[tool.poetry.group.dev.dependencies]
 tox = "^4.0"
 pytest = "^8.0"
 pytest-asyncio = "^0.23"

@@ -2,29 +2,19 @@ import logging
 import asyncio
 from typing import Any, Optional
 from types import FrameType
-import yaml
 import os
 import signal
 
 from powa.pd_control import DefaultConfig, PDController
 from powa.data_exporter import DataExporter
 from powa.types import PowerDomain
+from powa.utils import parse_yaml_file
 
 
 logger = logging.getLogger(__name__)
 
 
 DAEMON_LOCK_FILE = "/var/run/powa_daemon.lock"
-
-
-def parse_yaml_file(file_path) -> Any:
-    """ Load the information of a yaml file.
-
-    :param file_path: the path to the yaml file.
-    :return: the content of the yaml file.
-    """
-    with open(file_path, 'r') as file:
-        return yaml.safe_load(file)
 
 
 class PowaDaemon:
@@ -104,14 +94,32 @@ class PowaDaemon:
         if any(x is None for x in self._tasks):
             await asyncio.gather(*self._tasks)
 
+    def __enter__(self):
+        """ Context manager enter method to start the daemon. """
+        logger.info("Entering PowaDaemon context manager.")
+        return self
+
+    def __exit__(self, exc_type: Optional[type], exc_value: Optional[BaseException], traceback: Optional[Any]) -> None:
+        """ Context manager exit method to stop the daemon and clean up resources.
+
+        :param exc_type: the type of the exception raised, if any.
+        :param exc_value: the value of the exception raised, if any.
+        :param traceback: the traceback object, if any.
+        """
+        logger.info("Exiting PowaDaemon context manager.")
+
+        if os.path.exists(DAEMON_LOCK_FILE):
+            os.remove(DAEMON_LOCK_FILE)
+            logger.info(f"Erased lock file located in {DAEMON_LOCK_FILE}.")
+
 
 def start_daemon(config: str) -> None:
     """ Start the powa daemon by creating an instance of PowaDaemon and calling its start method.
 
     :param config: path to the yml configuration file.
     """
-    asyncio.run(PowaDaemon(config=config).start())
-    logger.info("Powa daemon started successfully.")
+    with PowaDaemon(config=config) as daemon:
+        asyncio.run(daemon.start())
 
 
 def stop_daemon() -> None:

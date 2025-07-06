@@ -43,7 +43,7 @@ parse_args() {
 
 ###############################################################################
 ## Parameters
-DOCKER_IMAGE_EXECUTED_LOCALLY='powa:local'
+DOCKER_IMAGE_EXECUTED_LOCALLY='powa-dev:local'
 DOCKERFILE='Dockerfile'
 REBUILD_IMAGE=false
 
@@ -70,6 +70,7 @@ if [[ "$(docker images -q ${DOCKER_IMAGE_EXECUTED_LOCALLY} 2>/dev/null)" == "" ]
     gid="$(id -g)"
     echo "Creating docker image (user, UID=${uid} and GID=${gid})"
     docker build -f ${SCRIPT_DIR}/../docker/${DOCKERFILE} \
+        --target dev \
         --build-arg USER_UID=${uid} --build-arg USER_GID=${gid} \
         -t ${DOCKER_IMAGE_EXECUTED_LOCALLY} . &&
         ${DOCKER_RUN_FULL_CMD}
