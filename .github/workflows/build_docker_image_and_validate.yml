@@ -74,11 +74,14 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-and-push-docker-image.outputs.dev-image-name }}
+      workdir: /home/embeddev/powa
+
     permissions:
       contents: read
 
     steps:
       - name: "👓 -> 🐛 Run unit tests"
         run: |
+          ls -lash
           echo "Running unit tests..."
           /home/embeddev/.local/bin/poetry run tox
