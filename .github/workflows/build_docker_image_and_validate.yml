@@ -1,9 +1,10 @@
-name: Build and Push docker image
+name: Build docker image and run some tests on it
 
 on: ["push"]
 
 jobs:
-  build-and-push:
+
+  build-and-push-docker-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -62,3 +63,17 @@ jobs:
           tags: ${{ env.DEV_NAME }}
           file: docker/Dockerfile
           target: dev
+
+  run-unit-tests:
+    needs: build-and-push-docker-image
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ env.DEV_NAME }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: "🔨 Run unit tests"
+        run: |
+          echo "Running unit tests..."
+          poetry run tox
