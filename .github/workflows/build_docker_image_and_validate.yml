@@ -2,6 +2,7 @@ name: Build docker image and run some tests on it
 
 on: ["push"]
 
+
 jobs:
 
   build-and-push-docker-image:
@@ -9,6 +10,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      prod-image-name: ${{ steps.build-images-names.outputs.prod-image-name }}
+      dev-image-name: ${{ steps.build-images-names.outputs.dev-image-name }}
 
     steps:
       - name: "⬇️ Checkout code"
@@ -22,6 +26,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "💭 Determine docker image tag"
+        id: build-images-names
         run: |
           echo "Github ref: ${GITHUB_REF}"
 
@@ -42,8 +47,8 @@ jobs:
           echo "Prod image name will be: ${PROD_NAME}"
           echo "Dev image name will be: ${DEV_NAME}"
 
-          echo "PROD_NAME=${PROD_NAME}" >> $GITHUB_ENV
-          echo "DEV_NAME=${DEV_NAME}" >> $GITHUB_ENV
+          echo "prod-image-name=${PROD_NAME}" >> $GITHUB_OUTPUT
+          echo "dev-image-name=${DEV_NAME}" >> $GITHUB_OUTPUT
 
       - name: "👷 Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
@@ -52,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.PROD_NAME }}
+          tags: ${{ steps.build-images-names.outputs.prod-image-name }}
           file: docker/Dockerfile
           target: prod
 
@@ -60,7 +65,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.DEV_NAME }}
+          tags: ${{ steps.build-images-names.outputs.dev-image-name }}
           file: docker/Dockerfile
           target: dev
 
@@ -68,12 +73,12 @@ jobs:
     needs: build-and-push-docker-image
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.DEV_NAME }}
+      image: ${{ needs.build-and-push-docker-image.outputs.dev-image-name }}
     permissions:
       contents: read
 
     steps:
-      - name: "🔨 Run unit tests"
+      - name: "👓 -> 🐛 Run unit tests"
         run: |
           echo "Running unit tests..."
-          poetry run tox
+          /home/embeddev/.local/bin/poetry run tox
