@@ -32,8 +32,8 @@ jobs:
           echo "IMAGE_TAG=${tag}" >> $GITHUB_ENV
 
           BASE_NAME="ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}"
-          PROD_NAME="${BASE_NAME}-prod:${tag}"
-          DEV_NAME="${BASE_NAME}-dev:${tag}"
+          PROD_NAME="${BASE_NAME}/prod:${tag}"
+          DEV_NAME="${BASE_NAME}/dev:${tag}"
 
           echo "Prod image name will be: ${PROD_NAME}"
           echo "Dev image name will be: ${DEV_NAME}"
